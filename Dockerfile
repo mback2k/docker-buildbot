@@ -5,7 +5,7 @@ RUN adduser --disabled-password --disabled-login --system --group \
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        python3 python3-pip \
+        python3 python3-pip python3-mysqldb \
         python3-psycopg2 python3-twisted python3-sqlalchemy \
         python3-cffi python3-openssl python3-cryptography && \
     apt-get clean
