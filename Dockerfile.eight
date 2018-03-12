@@ -7,7 +7,8 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         python python-pip python-mysqldb \
         python-psycopg2 python-twisted python-sqlalchemy \
-        python-cffi python-openssl python-cryptography && \
+        python-cffi python-openssl python-cryptography \
+        git && \
     apt-get clean
 
 RUN pip install --upgrade pip setuptools wheel
