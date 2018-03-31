@@ -8,11 +8,16 @@ RUN apt-get update && \
         python python-pip python-mysqldb \
         python-psycopg2 python-twisted python-sqlalchemy \
         python-cffi python-openssl python-cryptography \
-        git && \
+        git patch && \
     apt-get clean
 
 RUN pip install --upgrade pip setuptools wheel
 RUN pip install buildbot==0.8.12 buildbot-slave==0.8.12
+RUN pip install txgithub==15.0.0
+
+ADD fac31d3e899fcea9bb1c96de3447cca0d61a04e9.patch /opt/fac31d3e899fcea9bb1c96de3447cca0d61a04e9.patch
+WORKDIR /usr/local/lib/python2.7/dist-packages/buildbot
+RUN patch -p3 < /opt/fac31d3e899fcea9bb1c96de3447cca0d61a04e9.patch
 
 RUN mkdir -p /var/lib/buildbot
 WORKDIR /var/lib/buildbot

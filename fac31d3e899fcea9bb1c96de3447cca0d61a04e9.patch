@@ -1,0 +1,161 @@
+From fac31d3e899fcea9bb1c96de3447cca0d61a04e9 Mon Sep 17 00:00:00 2001
+From: Thomas Wood <thomas.wood09@imperial.ac.uk>
+Date: Fri, 12 Jun 2015 17:29:23 +0100
+Subject: [PATCH 1/3] Add context field to GitHubStatus updates
+
+Adds support for 'contexts' for the GitHub status API.
+The default context string is 'continuous-integration/buildbot/'
+followed by the builder name.
+The context can be configured by passing it to the constructor.
+(refs #2876)
+---
+ master/buildbot/status/github.py                |  9 +++++++--
+ master/buildbot/test/unit/test_status_github.py | 14 ++++++++++++--
+ 2 files changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/master/buildbot/status/github.py b/master/buildbot/status/github.py
+index c83622c..53eef26 100644
+--- a/master/buildbot/status/github.py
++++ b/master/buildbot/status/github.py
+@@ -49,6 +49,7 @@ def _getGitHubState(results):
+ 
+ 
+ class GitHubStatus(StatusReceiverMultiService):
++
+     """
+     Send build status to GitHub.
+ 
+@@ -59,7 +60,7 @@ class GitHubStatus(StatusReceiverMultiService):
+ 
+     def __init__(self, token, repoOwner, repoName, sha=None,
+                  startDescription=None, endDescription=None,
+-                 baseURL=None):
++                 baseURL=None, context=None):
+         """
+         Token for GitHub API.
+         """
+@@ -71,6 +72,7 @@ def __init__(self, token, repoOwner, repoName, sha=None,
+         self._sha = sha or Interpolate("%(src::revision)s")
+         self._repoOwner = repoOwner
+         self._repoName = repoName
++        self._context = context or Interpolate("buildbot/%(prop:buildername)s")
+         self._startDescription = startDescription or "Build started."
+         self._endDescription = endDescription or "Build done."
+ 
+@@ -166,10 +168,11 @@ def _getGitHubRepoProperties(self, build):
+         """
+         Return a dictionary with GitHub related properties from `build`.
+         """
+-        repoOwner, repoName, sha = yield defer.gatherResults([
++        repoOwner, repoName, sha, context = yield defer.gatherResults([
+             build.render(self._repoOwner),
+             build.render(self._repoName),
+             build.render(self._sha),
++            build.render(self._context),
+         ])
+ 
+         if not repoOwner or not repoName:
+@@ -185,6 +188,7 @@ def _getGitHubRepoProperties(self, build):
+             'sha': sha,
+             'targetURL': self._status.getURLForThing(build),
+             'buildNumber': str(build.getNumber()),
++            'context': context,
+         }
+         defer.returnValue(result)
+ 
+@@ -200,6 +204,7 @@ def _sendGitHubStatus(self, status):
+             state=status['state'].encode('utf-8'),
+             target_url=status['targetURL'].encode('utf-8'),
+             description=status['description'].encode('utf-8'),
++            context=status['context'].encode('utf-8'),
+         )
+ 
+         success_message = (
+diff --git a/master/buildbot/test/unit/test_status_github.py b/master/buildbot/test/unit/test_status_github.py
+index ae1446d..956d746 100644
+--- a/master/buildbot/test/unit/test_status_github.py
++++ b/master/buildbot/test/unit/test_status_github.py
+@@ -132,6 +132,8 @@ def test_initialization_required_arguments(self):
+         self.assertEqual(status._sha, Interpolate("%(src::revision)s"))
+         self.assertEqual(status._startDescription, "Build started.")
+         self.assertEqual(status._endDescription, "Build done.")
++        self.assertEqual(status._context,
++                         Interpolate("buildbot/%(prop:buildername)s"))
+ 
+     def test_custom_github_url(self):
+         """
+@@ -271,6 +273,7 @@ def test_sendStartStatus_ok(self):
+             'sha': '123',
+             'targetURL': 'http://example.tld',
+             'buildNumber': '1',
++            'context': 'context',
+         }
+         self.status._sendGitHubStatus = Mock(return_value=defer.succeed(None))
+         self.build.getTimes = lambda: (1, None)
+@@ -286,6 +289,7 @@ def test_sendStartStatus_ok(self):
+             'sha': '123',
+             'targetURL': 'http://example.tld',
+             'buildNumber': '1',
++            'context': 'context',
+             # Augmented arguments.
+             'state': 'pending',
+             'description': 'Build started.',
+@@ -330,6 +334,7 @@ def test_sendFinishStatus_ok(self):
+             'sha': '123',
+             'targetURL': 'http://example.tld',
+             'buildNumber': '1',
++            'context': 'context',
+         }
+         self.status._sendGitHubStatus = Mock(return_value=defer.succeed(None))
+         self.build.getTimes = lambda: (1, 3)
+@@ -346,6 +351,7 @@ def test_sendFinishStatus_ok(self):
+             'sha': '123',
+             'targetURL': 'http://example.tld',
+             'buildNumber': '1',
++            'context': 'context',
+             # Augmented arguments.
+             'state': 'success',
+             'description': 'Build done.',
+@@ -398,6 +404,7 @@ def test_getGitHubRepoProperties_ok(self):
+         self.status._repoOwner = Interpolate('owner')
+         self.status._repoName = Interpolate('name')
+         self.status._sha = Interpolate('sha')
++        self.status._context = Interpolate('context')
+         self.status._status = Mock()
+         self.status._status.getURLForThing = lambda build: 'http://example.org'
+         self.build.getNumber = lambda: 1
+@@ -411,8 +418,8 @@ def test_getGitHubRepoProperties_ok(self):
+             'repoOwner': 'owner',
+             'sha': 'sha',
+             'targetURL': 'http://example.org',
+-        },
+-            result)
++            'context': 'context',
++        }, result)
+ 
+     def test_getGitHubState(self):
+         """
+@@ -435,6 +442,7 @@ def test_sendGitHubStatus_success(self):
+             'state': u'state-resum\xe9',
+             'targetURL': u'targetURL-resum\xe9',
+             'description': u'description-resum\xe9',
++            'context': u'context-resum\xe9',
+         }
+         self.status._github.repos.createStatus = Mock(
+             return_value=defer.succeed(None))
+@@ -450,6 +458,7 @@ def test_sendGitHubStatus_success(self):
+             state='state-resum\xc3\xa9',
+             target_url='targetURL-resum\xc3\xa9',
+             description='description-resum\xc3\xa9',
++            context='context-resum\xc3\xa9',
+         )
+ 
+         self.assertLog(
+@@ -468,6 +477,7 @@ def test_sendGitHubStatus_error(self):
+             'state': u'state',
+             'targetURL': u'targetURL',
+             'description': u'description',
++            'context': u'context',
+         }
+         error = MarkerError('fail-send-status')
+         self.status._github.repos.createStatus = Mock(
