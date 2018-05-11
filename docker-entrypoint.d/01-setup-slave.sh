@@ -18,7 +18,7 @@ if [ -z "${MASTERPORT}" ]; then MASTERPORT="10000";  fi
 if [ -z "${SLAVENAME}" ];  then SLAVENAME="docker";  fi
 if [ -z "${SLAVEPASS}" ];  then SLAVEPASS="docker";  fi
 
-if [ -f "${BASEDIR}/buildbot.tac" ]; then
+if [ -f "${BASEDIR}/buildbot.tac" ]; then
     /usr/local/bin/buildslave upgrade-slave "${BASEDIR}"
 else
     /usr/local/bin/buildslave create-slave "${BASEDIR}" "${MASTERHOST}:${MASTERPORT}" "${SLAVENAME}" "${SLAVEPASS}"

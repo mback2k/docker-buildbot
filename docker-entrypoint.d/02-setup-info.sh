@@ -10,8 +10,6 @@ if [ ! -d "${BASEDIR}/info" ]; then
 fi
 
 whoami > "${BASEDIR}/info/admin"
-
-source /etc/os-release
-echo "${PRETTY_NAME}" > "${BASEDIR}/info/host"
+uname -a > "${BASEDIR}/info/host"
 
 exit 0

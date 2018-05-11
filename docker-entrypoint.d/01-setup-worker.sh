@@ -18,7 +18,7 @@ if [ -z "${MASTERPORT}" ]; then MASTERPORT="10000";  fi
 if [ -z "${WORKERNAME}" ]; then WORKERNAME="docker"; fi
 if [ -z "${WORKERPASS}" ]; then WORKERPASS="docker"; fi
 
-if [ -f "${BASEDIR}/buildbot.tac" ]; then
+if [ -f "${BASEDIR}/buildbot.tac" ]; then
     /usr/local/bin/buildbot-worker upgrade-worker "${BASEDIR}"
 else
     /usr/local/bin/buildbot-worker create-worker "${BASEDIR}" "${MASTERHOST}:${MASTERPORT}" "${WORKERNAME}" "${WORKERPASS}"
