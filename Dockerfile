@@ -20,4 +20,6 @@ WORKDIR /var/lib/buildbot
 VOLUME /var/lib/buildbot
 USER buildbot
 
+ADD docker-entrypoint.d/ /run/docker-entrypoint.d/
+
 CMD ["/usr/bin/twistd3", "-noy", "/var/lib/buildbot/buildbot.tac"]
