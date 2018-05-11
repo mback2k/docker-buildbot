@@ -1,9 +1,13 @@
 #!/bin/sh
 set -e
 
-if [ -z "${MASTER}" ]; then exit 0; fi
+if [ "${ROLE}" != "master" ]; then
+    exit 0
+fi
 
-if [ -z "${BASEDIR}" ]; then BASEDIR="/var/lib/buildbot"; fi
+if [ -z "${BASEDIR}" ]; then
+    BASEDIR="/var/lib/buildbot"
+fi
 
 if [ -f "${BASEDIR}/buildbot.tac" ]; then
     /usr/local/bin/buildbot upgrade-master "${BASEDIR}"

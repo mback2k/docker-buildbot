@@ -1,13 +1,20 @@
 #!/bin/sh
 set -e
 
-if [ ! -z "${MASTER}" ]; then exit 0; fi
+if [ "${ROLE}" != "worker" ]; then
+    exit 0
+fi
 
-if [ ! -f "/usr/local/bin/buildbot-worker"]; then exit 0; fi
+if [ ! -x "/usr/local/bin/buildbot-worker" ]; then
+    exit 0
+fi
 
-if [ -z "${BASEDIR}" ]; then BASEDIR="/var/lib/buildbot"; fi
+if [ -z "${BASEDIR}" ]; then
+    BASEDIR="/var/lib/buildbot"
+fi
+
 if [ -z "${MASTERHOST}" ]; then MASTERHOST="master"; fi
-if [ -z "${MASTERPORT}" ]; then MASTERPORT="10000"; fi
+if [ -z "${MASTERPORT}" ]; then MASTERPORT="10000";  fi
 if [ -z "${WORKERNAME}" ]; then WORKERNAME="docker"; fi
 if [ -z "${WORKERPASS}" ]; then WORKERPASS="docker"; fi
 
