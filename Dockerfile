@@ -8,7 +8,9 @@ RUN apt-get update && \
         python3 python3-pip python3-mysqldb \
         python3-psycopg2 python3-twisted python3-sqlalchemy \
         python3-cffi python3-openssl python3-cryptography \
-        git && \
+        git patch && \
+    apt-get install -y --no-install-recommends \
+        msmtp msmtp-mta && \
     apt-get clean
 
 RUN pip3 install --upgrade pip setuptools wheel

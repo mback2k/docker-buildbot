@@ -9,6 +9,8 @@ RUN apt-get update && \
         python-psycopg2 python-twisted python-sqlalchemy \
         python-cffi python-openssl python-cryptography \
         git patch && \
+    apt-get install -y --no-install-recommends \
+        msmtp msmtp-mta && \
     apt-get clean
 
 RUN pip install --upgrade pip setuptools wheel
