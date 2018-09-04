@@ -24,4 +24,4 @@ USER buildbot
 
 ADD docker-entrypoint.d/ /run/docker-entrypoint.d/
 
-CMD ["/usr/local/bin/twistd-buildbot"]
+CMD ["/usr/bin/twistd3", "-noy", "/var/lib/buildbot/buildbot.tac"]
