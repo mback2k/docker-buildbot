@@ -23,5 +23,6 @@ VOLUME /var/lib/buildbot
 USER buildbot
 
 ADD docker-entrypoint.d/ /run/docker-entrypoint.d/
+ENV DOCKER_ENV_HIDEVARS MASTERHOST MASTERPORT WORKERNAME WORKERPASS
 
 CMD ["/usr/bin/twistd3", "-noy", "/var/lib/buildbot/buildbot.tac"]
