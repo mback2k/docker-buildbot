@@ -8,7 +8,7 @@ RUN apt-get update && \
         python python-pip python-mysqldb \
         python-psycopg2 python-twisted python-sqlalchemy \
         python-cffi python-openssl python-cryptography \
-        curl git patch && \
+        openssh-client curl git patch && \
     apt-get install -y --no-install-recommends \
         msmtp msmtp-mta && \
     apt-get clean
