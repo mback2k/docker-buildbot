@@ -1,4 +1,4 @@
-FROM mback2k/debian:stretch
+FROM mback2k/debian:stretch-backports
 
 RUN adduser --disabled-password --disabled-login --system --group \
         --uid 813 --home /var/lib/buildbot buildbot
